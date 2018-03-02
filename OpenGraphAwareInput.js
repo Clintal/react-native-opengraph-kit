@@ -30,24 +30,26 @@ export default class OpenGraphAwareInput extends Component {
         onIconPress: PropTypes.func,
         showIcon: PropTypes.bool,
         textInputStyle: TextInput.propTypes.style,
+        resultLimit: PropTypes.number,
     };
 
     static defaultProps = {
         debounceDelay: 300,
         showIcon: false,
+        resultLimit: 1,
     };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            openGraphData: {},
+            openGraphData: [],
         };
     }
 
     handleDismissOpengraph = () => {
         this.setState({
-            openGraphData: {},
+            openGraphData: [],
         });
     }
 
@@ -58,11 +60,11 @@ export default class OpenGraphAwareInput extends Component {
                 (data) => {
                     const customEvent = {};
 
-                    this.setState({ openGraphData: data || {} });
+                    this.setState({ openGraphData: data || [] });
 
                     if (this.props.onChange) {
                         customEvent.event = event;
-                        customEvent.opengraphData = data || {};
+                        customEvent.opengraphData = data || [];
                         customEvent.text = text;
 
                         this.props.onChange(customEvent);
@@ -80,6 +82,7 @@ export default class OpenGraphAwareInput extends Component {
     };
 
     render() {
+        const ogDataToDisplay = this.state.openGraphData.slice(0, this.props.resultLimit);
         return (
             <View
                 style={[
@@ -94,15 +97,18 @@ export default class OpenGraphAwareInput extends Component {
                         this.props.textInputStyle,
                     ]}
                 />
-                <OpenGraphDisplay
-                    data={this.state.openGraphData}
-                    onIconPress={this.props.showIcon
-                        ? this.props.onIconPress || this.handleDismissOpengraph
-                        : null
-                    }
-                    iconSource={this.props.iconSource}
-                    iconStyle={this.props.iconStyle}
-                />
+                {ogDataToDisplay.map((meta, i) =>
+                    <OpenGraphDisplay
+                        key={i}
+                        data={meta}
+                        onIconPress={this.props.showIcon
+                            ? this.props.onIconPress || this.handleDismissOpengraph
+                            : null
+                        }
+                        iconSource={this.props.iconSource}
+                        iconStyle={this.props.iconStyle}
+                    />
+                )}
             </View>
         );
     }
